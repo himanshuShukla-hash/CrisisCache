@@ -329,72 +329,72 @@
         </div>
       </div>
 
-      <!-- M3 LIVE MESH MAP CARD (Leaflet) — Full Width Below -->
-      </div><!-- end right col -->
-    </div><!-- end main grid -->
-
-    <!-- FULL WIDTH MAP SECTION -->
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 pb-6">
-      <div class="bg-white rounded-[28px] p-5 sm:p-6 space-y-4 border border-m3-outlineVariant/40 m3-elevation-1">
-
-        <!-- Header Row -->
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <h3 class="text-sm font-bold text-m3-onSurface flex items-center gap-2">
-            <span class="material-symbols-rounded text-m3-primary text-xl">map</span>
-            Live Disaster Mesh Map
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-m3-primaryContainer text-m3-onPrimaryContainer">Real-time GPS</span>
-          </h3>
-          <div class="flex items-center gap-2">
-            <span id="map-sos-badge" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-full bg-m3-errorContainer text-m3-onErrorContainer border border-m3-error/20 animate-pulse">
-              🔴 SOS ACTIVE
-            </span>
-            <button onclick="resetMeshMap()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant text-xs font-semibold border border-m3-outlineVariant/40 transition">
-              <span class="material-symbols-rounded text-sm">restart_alt</span>
-              Reset Map
-            </button>
-          </div>
-        </div>
-
-        <p class="text-[11px] text-m3-onSurfaceVariant">
-          Offline GPS mesh — SOS signals drop a <b>pulsing red pin</b> at origin coordinates. Line drawn from your node to SOS source.
-        </p>
-
-        <!-- Big Leaflet Map (Expanded Width & Height) -->
-        <div id="mesh-map" style="height: 520px; width: 100%; border-radius: 20px; overflow: hidden; border: 1.5px solid #cac4cf;"></div>
-
-        <!-- Legend + Stats Row -->
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-5 text-[11px] text-m3-onSurfaceVariant">
-            <div class="flex items-center gap-1.5">
-              <div style="width:13px;height:13px;border-radius:50%;background:#6b4fa2;border:2.5px solid white;box-shadow:0 1px 5px rgba(107,79,162,0.6);"></div>
-              <span class="font-medium">Your Node</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <div style="width:13px;height:13px;border-radius:50%;background:#2196f3;border:2.5px solid white;box-shadow:0 1px 4px rgba(33,150,243,0.5);"></div>
-              <span class="font-medium">Peer Node</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <div style="width:13px;height:13px;border-radius:50%;background:#ba1a1a;border:2.5px solid white;box-shadow:0 1px 5px rgba(186,26,26,0.6);"></div>
-              <span class="font-medium">SOS Origin</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <div style="width:28px;height:3px;background:repeating-linear-gradient(90deg,#ba1a1a 0,#ba1a1a 5px,transparent 5px,transparent 10px);border-radius:2px;"></div>
-              <span class="font-medium">Mesh Link</span>
-            </div>
-          </div>
-          <div class="mono text-[11px] text-m3-outline">
-            Mesh active • <span id="sos-marker-count">0</span> SOS signals plotted
-          </div>
-        </div>
-
       </div>
     </div>
+  </main>
 
-    <!-- dummy closing tags needed by HTML structure — real ones removed above -->
-    <div class="hidden">
+  <!-- FULL WIDTH WIDE-RECTANGLE MAP SECTION AT BOTTOM -->
+  <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+    <div class="bg-white rounded-[24px] p-6 space-y-4 border border-m3-outlineVariant/40 shadow-lg">
+
+      <!-- Header Row -->
+      <div class="flex items-center justify-between flex-wrap gap-4 border-b border-m3-outlineVariant/20 pb-4">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-rounded text-m3-primary text-2xl">map</span>
+            <h2 class="text-base sm:text-lg font-bold text-m3-onSurface">Live Disaster Mesh Geographical Overview</h2>
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-m3-primaryContainer text-m3-onPrimaryContainer">
+              Decentralized GPS
+            </span>
+          </div>
+          <p class="text-xs text-m3-onSurfaceVariant mt-1">
+            Real-time peer topology. Triggering an SOS dynamically renders an expanding red pulse and trace line to source.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="map-sos-badge" class="hidden text-xs font-bold px-3 py-1 rounded-full bg-m3-errorContainer text-m3-onErrorContainer border border-m3-error/30 animate-pulse flex items-center gap-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-red-600"></span>
+            ACTIVE SOS BROADCAST
+          </span>
+          <button onclick="resetMeshMap()" class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant text-xs font-bold border border-m3-outlineVariant/40 transition">
+            <span class="material-symbols-rounded text-sm">restart_alt</span>
+            Reset Map
+          </button>
+        </div>
+      </div>
+
+      <!-- Grand Wide Rectangle Leaflet Map Container -->
+      <div id="mesh-map" style="height: 540px; width: 100%; border-radius: 18px; overflow: hidden; border: 2px solid #e4dfe8;" class="shadow-inner"></div>
+
+      <!-- Map Legend & Live Stats Bar -->
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-2 border-t border-m3-outlineVariant/20">
+        <div class="flex items-center gap-6 text-xs text-m3-onSurfaceVariant font-medium">
+          <div class="flex items-center gap-2">
+            <div style="width:14px;height:14px;border-radius:50%;background:#6b4fa2;border:2.5px solid white;box-shadow:0 1px 5px rgba(107,79,162,0.6);"></div>
+            <span>Your Active Node</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div style="width:14px;height:14px;border-radius:50%;background:#2196f3;border:2.5px solid white;box-shadow:0 1px 4px rgba(33,150,243,0.5);"></div>
+            <span>Connected Relays (Peers)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div style="width:14px;height:14px;border-radius:50%;background:#ba1a1a;border:2.5px solid white;box-shadow:0 1px 5px rgba(186,26,26,0.6);"></div>
+            <span>SOS Origin Node</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div style="width:32px;height:3px;background:repeating-linear-gradient(90deg,#ba1a1a 0,#ba1a1a 6px,transparent 6px,transparent 12px);border-radius:2px;"></div>
+            <span>P2P Vector Link</span>
+          </div>
+        </div>
+
+        <div class="mono text-xs text-m3-outline bg-m3-surfaceContainerLow px-3.5 py-1.5 rounded-full border border-m3-outlineVariant/30">
+          Radio Status: <span class="text-emerald-600 font-bold">ONLINE</span> • Plotted SOS Signals: <span id="sos-marker-count" class="font-bold text-m3-onSurface">0</span>
+        </div>
+      </div>
 
     </div>
-  </main>
+  </section>
 
   <!-- WEBAUDIO SIREN ENGINE -->
   <script>
