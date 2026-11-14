@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "live_server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/events", "dest": "/live_server.js" },
+    { "src": "/broadcast", "dest": "/live_server.js" },
+    { "src": "/peer.html", "dest": "/live_server.js" },
+    { "src": "/demo.html", "dest": "/live_server.js" },
+    { "src": "/", "dest": "/live_server.js" }
+  ]
+}
