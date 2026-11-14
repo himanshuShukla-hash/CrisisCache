@@ -12,6 +12,10 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
   <script>
     tailwind.config = {
@@ -68,6 +72,49 @@
       100% { transform: scale(0.98); opacity: 0.95; }
     }
     .m3-alarm-pulse { animation: pulse-m3-red 1.2s infinite ease-in-out; }
+
+    /* SOS Pulse Ring on Map */
+    @keyframes sos-ring {
+      0%   { transform: scale(1);   opacity: 0.9; }
+      70%  { transform: scale(2.5); opacity: 0;   }
+      100% { transform: scale(2.5); opacity: 0;   }
+    }
+    .sos-ping-ring {
+      position: absolute;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(186, 26, 26, 0.6);
+      animation: sos-ring 1.4s ease-out infinite;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .sos-ping-ring-2 {
+      animation-delay: 0.5s;
+    }
+    .my-node-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #6b4fa2;
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(107,79,162,0.6);
+    }
+    .peer-node-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #2196f3;
+      border: 2.5px solid white;
+      box-shadow: 0 2px 6px rgba(33,150,243,0.5);
+    }
+    .sos-node-dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #ba1a1a;
+      border: 3px solid white;
+      box-shadow: 0 2px 10px rgba(186,26,26,0.7);
+    }
+    #mesh-map { z-index: 1; border-radius: 20px; }
+    .leaflet-container { background: #f8f4ff; }
   </style>
 </head>
 
@@ -282,6 +329,44 @@
         </div>
       </div>
 
+      <!-- M3 LIVE MESH MAP CARD (Leaflet) -->
+      <div class="bg-white rounded-[28px] p-5 sm:p-6 space-y-3 border border-m3-outlineVariant/40 m3-elevation-1">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-m3-onSurface flex items-center gap-2">
+            <span class="material-symbols-rounded text-m3-primary text-xl">map</span>
+            Live Mesh Node Map
+          </h3>
+          <span id="map-sos-badge" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-full bg-m3-errorContainer text-m3-onErrorContainer border border-m3-error/20 animate-pulse">
+            🔴 SOS ACTIVE
+          </span>
+        </div>
+        <p class="text-[11px] text-m3-onSurfaceVariant">Real-time GPS node positions over offline mesh. SOS signals shown with pulsing red ring.</p>
+
+        <!-- Leaflet Map Container -->
+        <div id="mesh-map" style="height: 260px; width: 100%; border-radius: 20px; overflow: hidden; border: 1.5px solid #cac4cf;"></div>
+
+        <!-- Map Legend -->
+        <div class="flex items-center gap-4 text-[11px] text-m3-onSurfaceVariant pt-1">
+          <div class="flex items-center gap-1.5">
+            <div style="width:12px;height:12px;border-radius:50%;background:#6b4fa2;border:2px solid white;box-shadow:0 1px 4px rgba(107,79,162,0.5);"></div>
+            <span>Your Node</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div style="width:12px;height:12px;border-radius:50%;background:#2196f3;border:2px solid white;"></div>
+            <span>Peer Node</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div style="width:12px;height:12px;border-radius:50%;background:#ba1a1a;border:2px solid white;"></div>
+            <span>SOS Origin</span>
+          </div>
+        </div>
+
+        <!-- SOS Count -->
+        <div class="mono text-[11px] text-m3-outline text-center" id="map-status-text">
+          Mesh active • <span id="sos-marker-count">0</span> SOS signals plotted
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -402,6 +487,9 @@
         document.getElementById('alarm-message').innerText = `[${event.category}] Life-safety distress triggered by peer ${event.sender}.`;
         document.getElementById('alarm-meta').innerText = `Origin: ${event.sender} | Timestamp: ${new Date(event.timestamp).toLocaleTimeString()} | Priority: 10 (P10)`;
         playSiren();
+
+        // 🗺️ Drop SOS pin on the mesh map
+        addSosMapMarker(event);
       }
     }
 
@@ -472,7 +560,123 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       connectMeshEventStream();
+      initMeshMap();
     });
+  </script>
+
+  <!-- LEAFLET MAP ENGINE -->
+  <script>
+    // Base location: New Delhi (same as app codebase)
+    const BASE_LAT = 28.6139;
+    const BASE_LON = 77.2090;
+    let meshMap = null;
+    let myMarker = null;
+    let sosMarkerCount = 0;
+    const peerMarkers = {};
+
+    function initMeshMap() {
+      // Init Leaflet map
+      meshMap = L.map('mesh-map', {
+        center: [BASE_LAT, BASE_LON],
+        zoom: 14,
+        zoomControl: true,
+        attributionControl: false
+      });
+
+      // OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        opacity: 0.85
+      }).addTo(meshMap);
+
+      // Purple "Your Node" marker (self)
+      const myIcon = L.divIcon({
+        className: '',
+        html: `<div style="position:relative;width:24px;height:24px;">
+          <div class="my-node-dot"></div>
+        </div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+        popupAnchor: [0, -14]
+      });
+
+      myMarker = L.marker([BASE_LAT, BASE_LON], { icon: myIcon })
+        .addTo(meshMap)
+        .bindPopup(`<b>📱 Your Node</b><br>${myNodeId}<br><span style="color:#6b4fa2;font-size:11px">ed25519 verified</span>`)
+        .openPopup();
+
+      // Add 2 simulated peer nodes at offset fake locations
+      addPeerMapMarker('peer-alpha', BASE_LAT + 0.0035, BASE_LON - 0.0040, 'Peer Alpha (Nearby Node)');
+      addPeerMapMarker('peer-beta',  BASE_LAT - 0.0020, BASE_LON + 0.0055, 'Peer Beta (Relay Node)');
+    }
+
+    function addPeerMapMarker(peerId, lat, lon, label) {
+      if (!meshMap) return;
+      if (peerMarkers[peerId]) {
+        peerMarkers[peerId].setLatLng([lat, lon]);
+        return;
+      }
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="peer-node-dot"></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+        popupAnchor: [0, -10]
+      });
+      peerMarkers[peerId] = L.marker([lat, lon], { icon })
+        .addTo(meshMap)
+        .bindPopup(`<b>📡 ${label}</b><br><span style="color:#2196f3;font-size:11px">Connected via mesh</span>`);
+    }
+
+    function addSosMapMarker(event) {
+      if (!meshMap) return;
+
+      // Jitter the location slightly so multiple SOS don't stack
+      const jitter = () => (Math.random() - 0.5) * 0.008;
+      const lat = (event.location && event.location.lat) ? event.location.lat + jitter() : BASE_LAT + jitter();
+      const lon = (event.location && event.location.lon) ? event.location.lon + jitter() : BASE_LON + jitter();
+
+      sosMarkerCount++;
+      document.getElementById('sos-marker-count').innerText = sosMarkerCount;
+
+      // Show SOS badge
+      const badge = document.getElementById('map-sos-badge');
+      badge.classList.remove('hidden');
+
+      // Red pulsing SOS icon
+      const sosIcon = L.divIcon({
+        className: '',
+        html: `<div style="position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">
+          <div class="sos-ping-ring"></div>
+          <div class="sos-ping-ring sos-ping-ring-2"></div>
+          <div class="sos-node-dot"></div>
+        </div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -17]
+      });
+
+      const timeStr = new Date(event.timestamp || Date.now()).toLocaleTimeString();
+      L.marker([lat, lon], { icon: sosIcon, zIndexOffset: 1000 })
+        .addTo(meshMap)
+        .bindPopup(`
+          <div style="font-family:sans-serif;">
+            <b style="color:#ba1a1a">🚨 SOS: ${event.category || 'EMERGENCY'}</b><br>
+            <span style="font-size:11px;color:#555">Node: ${event.sender || 'Unknown'}</span><br>
+            <span style="font-size:11px;color:#555">Time: ${timeStr}</span><br>
+            <span style="font-size:10px;background:#ffdad6;padding:2px 6px;border-radius:4px;color:#410002;">P10 Life-Safety</span>
+          </div>
+        `)
+        .openPopup();
+
+      // Pan map to SOS location
+      meshMap.setView([lat, lon], 15, { animate: true });
+
+      // Add peer marker for the sender (if not already there)
+      if (event.sender && event.sender !== myNodeId) {
+        addPeerMapMarker(event.sender, lat + 0.001, lon + 0.001, `Peer: ${event.sender}`);
+      }
+    }
   </script>
 </body>
 </html>
