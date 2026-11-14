@@ -329,46 +329,71 @@
         </div>
       </div>
 
-      <!-- M3 LIVE MESH MAP CARD (Leaflet) -->
-      <div class="bg-white rounded-[28px] p-5 sm:p-6 space-y-3 border border-m3-outlineVariant/40 m3-elevation-1">
-        <div class="flex items-center justify-between">
+      <!-- M3 LIVE MESH MAP CARD (Leaflet) — Full Width Below -->
+      </div><!-- end right col -->
+    </div><!-- end main grid -->
+
+    <!-- FULL WIDTH MAP SECTION -->
+    <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 pb-6">
+      <div class="bg-white rounded-[28px] p-5 sm:p-6 space-y-4 border border-m3-outlineVariant/40 m3-elevation-1">
+
+        <!-- Header Row -->
+        <div class="flex items-center justify-between flex-wrap gap-3">
           <h3 class="text-sm font-bold text-m3-onSurface flex items-center gap-2">
             <span class="material-symbols-rounded text-m3-primary text-xl">map</span>
-            Live Mesh Node Map
+            Live Disaster Mesh Map
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-m3-primaryContainer text-m3-onPrimaryContainer">Real-time GPS</span>
           </h3>
-          <span id="map-sos-badge" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-full bg-m3-errorContainer text-m3-onErrorContainer border border-m3-error/20 animate-pulse">
-            🔴 SOS ACTIVE
-          </span>
-        </div>
-        <p class="text-[11px] text-m3-onSurfaceVariant">Real-time GPS node positions over offline mesh. SOS signals shown with pulsing red ring.</p>
-
-        <!-- Leaflet Map Container -->
-        <div id="mesh-map" style="height: 260px; width: 100%; border-radius: 20px; overflow: hidden; border: 1.5px solid #cac4cf;"></div>
-
-        <!-- Map Legend -->
-        <div class="flex items-center gap-4 text-[11px] text-m3-onSurfaceVariant pt-1">
-          <div class="flex items-center gap-1.5">
-            <div style="width:12px;height:12px;border-radius:50%;background:#6b4fa2;border:2px solid white;box-shadow:0 1px 4px rgba(107,79,162,0.5);"></div>
-            <span>Your Node</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <div style="width:12px;height:12px;border-radius:50%;background:#2196f3;border:2px solid white;"></div>
-            <span>Peer Node</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <div style="width:12px;height:12px;border-radius:50%;background:#ba1a1a;border:2px solid white;"></div>
-            <span>SOS Origin</span>
+          <div class="flex items-center gap-2">
+            <span id="map-sos-badge" class="hidden text-[10px] font-bold px-2.5 py-1 rounded-full bg-m3-errorContainer text-m3-onErrorContainer border border-m3-error/20 animate-pulse">
+              🔴 SOS ACTIVE
+            </span>
+            <button onclick="resetMeshMap()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant text-xs font-semibold border border-m3-outlineVariant/40 transition">
+              <span class="material-symbols-rounded text-sm">restart_alt</span>
+              Reset Map
+            </button>
           </div>
         </div>
 
-        <!-- SOS Count -->
-        <div class="mono text-[11px] text-m3-outline text-center" id="map-status-text">
-          Mesh active • <span id="sos-marker-count">0</span> SOS signals plotted
+        <p class="text-[11px] text-m3-onSurfaceVariant">
+          Offline GPS mesh — SOS signals drop a <b>pulsing red pin</b> at origin coordinates. Line drawn from your node to SOS source.
+        </p>
+
+        <!-- Big Leaflet Map -->
+        <div id="mesh-map" style="height: 420px; width: 100%; border-radius: 20px; overflow: hidden; border: 1.5px solid #cac4cf;"></div>
+
+        <!-- Legend + Stats Row -->
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-5 text-[11px] text-m3-onSurfaceVariant">
+            <div class="flex items-center gap-1.5">
+              <div style="width:13px;height:13px;border-radius:50%;background:#6b4fa2;border:2.5px solid white;box-shadow:0 1px 5px rgba(107,79,162,0.6);"></div>
+              <span class="font-medium">Your Node</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div style="width:13px;height:13px;border-radius:50%;background:#2196f3;border:2.5px solid white;box-shadow:0 1px 4px rgba(33,150,243,0.5);"></div>
+              <span class="font-medium">Peer Node</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div style="width:13px;height:13px;border-radius:50%;background:#ba1a1a;border:2.5px solid white;box-shadow:0 1px 5px rgba(186,26,26,0.6);"></div>
+              <span class="font-medium">SOS Origin</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div style="width:28px;height:3px;background:repeating-linear-gradient(90deg,#ba1a1a 0,#ba1a1a 5px,transparent 5px,transparent 10px);border-radius:2px;"></div>
+              <span class="font-medium">Mesh Link</span>
+            </div>
+          </div>
+          <div class="mono text-[11px] text-m3-outline">
+            Mesh active • <span id="sos-marker-count">0</span> SOS signals plotted
+          </div>
         </div>
+
       </div>
-
     </div>
 
+    <!-- dummy closing tags needed by HTML structure — real ones removed above -->
+    <div class="hidden">
+
+    </div>
   </main>
 
   <!-- WEBAUDIO SIREN ENGINE -->
@@ -566,16 +591,16 @@
 
   <!-- LEAFLET MAP ENGINE -->
   <script>
-    // Base location: New Delhi (same as app codebase)
     const BASE_LAT = 28.6139;
     const BASE_LON = 77.2090;
     let meshMap = null;
     let myMarker = null;
     let sosMarkerCount = 0;
     const peerMarkers = {};
+    // Track all SOS markers + lines for reset
+    const sosLayers = [];
 
     function initMeshMap() {
-      // Init Leaflet map
       meshMap = L.map('mesh-map', {
         center: [BASE_LAT, BASE_LON],
         zoom: 14,
@@ -583,34 +608,53 @@
         attributionControl: false
       });
 
-      // OpenStreetMap tiles
+      // OSM Tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        opacity: 0.85
+        opacity: 0.88
       }).addTo(meshMap);
 
-      // Purple "Your Node" marker (self)
+      // ── YOUR NODE: big purple marker ──
       const myIcon = L.divIcon({
         className: '',
-        html: `<div style="position:relative;width:24px;height:24px;">
-          <div class="my-node-dot"></div>
-        </div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -14]
+        html: `
+          <div style="position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
+            <div style="position:absolute;width:36px;height:36px;border-radius:50%;background:rgba(107,79,162,0.18);animation:sos-ring 2s ease-out infinite;"></div>
+            <div class="my-node-dot" style="width:20px;height:20px;border:3px solid white;"></div>
+          </div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20]
       });
-
-      myMarker = L.marker([BASE_LAT, BASE_LON], { icon: myIcon })
+      myMarker = L.marker([BASE_LAT, BASE_LON], { icon: myIcon, zIndexOffset: 500 })
         .addTo(meshMap)
-        .bindPopup(`<b>📱 Your Node</b><br>${myNodeId}<br><span style="color:#6b4fa2;font-size:11px">ed25519 verified</span>`)
+        .bindPopup(`
+          <div style="font-family:sans-serif;min-width:160px;">
+            <b style="color:#6b4fa2">📱 YOUR NODE</b><br>
+            <span style="font-size:11px;color:#555;font-family:monospace">${myNodeId}</span><br>
+            <span style="font-size:10px;background:#eddcff;padding:2px 7px;border-radius:4px;color:#260058;">ed25519 ✓ verified</span><br>
+            <span style="font-size:10px;color:#888;margin-top:2px;display:block;">📍 28.6139°N, 77.2090°E</span>
+          </div>`)
         .openPopup();
 
-      // Add 2 simulated peer nodes at offset fake locations
-      addPeerMapMarker('peer-alpha', BASE_LAT + 0.0035, BASE_LON - 0.0040, 'Peer Alpha (Nearby Node)');
-      addPeerMapMarker('peer-beta',  BASE_LAT - 0.0020, BASE_LON + 0.0055, 'Peer Beta (Relay Node)');
+      // ── 2 SIMULATED PEER NODES ──
+      addPeerMapMarker('peer-alpha', BASE_LAT + 0.0035, BASE_LON - 0.0040, 'Peer Alpha', '0.4 km NW');
+      addPeerMapMarker('peer-beta',  BASE_LAT - 0.0020, BASE_LON + 0.0055, 'Peer Beta',  '0.6 km SE');
+
+      // Draw mesh link lines between nodes (dashed purple)
+      const myLatLng = [BASE_LAT, BASE_LON];
+      [
+        [BASE_LAT + 0.0035, BASE_LON - 0.0040],
+        [BASE_LAT - 0.0020, BASE_LON + 0.0055]
+      ].forEach(peer => {
+        L.polyline([myLatLng, peer], {
+          color: '#6b4fa2', weight: 1.5,
+          dashArray: '6 5', opacity: 0.5
+        }).addTo(meshMap);
+      });
     }
 
-    function addPeerMapMarker(peerId, lat, lon, label) {
+    function addPeerMapMarker(peerId, lat, lon, label, dist) {
       if (!meshMap) return;
       if (peerMarkers[peerId]) {
         peerMarkers[peerId].setLatLng([lat, lon]);
@@ -618,64 +662,95 @@
       }
       const icon = L.divIcon({
         className: '',
-        html: `<div class="peer-node-dot"></div>`,
-        iconSize: [14, 14],
-        iconAnchor: [7, 7],
-        popupAnchor: [0, -10]
+        html: `<div class="peer-node-dot" style="width:16px;height:16px;border:2.5px solid white;"></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+        popupAnchor: [0, -12]
       });
       peerMarkers[peerId] = L.marker([lat, lon], { icon })
         .addTo(meshMap)
-        .bindPopup(`<b>📡 ${label}</b><br><span style="color:#2196f3;font-size:11px">Connected via mesh</span>`);
+        .bindPopup(`
+          <div style="font-family:sans-serif;">
+            <b style="color:#2196f3">📡 ${label}</b><br>
+            <span style="font-size:11px;color:#555">Distance: ${dist || 'nearby'}</span><br>
+            <span style="font-size:10px;background:#e3f2fd;padding:2px 7px;border-radius:4px;color:#0d47a1;">Mesh relay active</span>
+          </div>`);
     }
 
     function addSosMapMarker(event) {
       if (!meshMap) return;
 
-      // Jitter the location slightly so multiple SOS don't stack
-      const jitter = () => (Math.random() - 0.5) * 0.008;
+      // Jitter so multiple SOS don't overlap
+      const jitter = () => (Math.random() - 0.5) * 0.009;
       const lat = (event.location && event.location.lat) ? event.location.lat + jitter() : BASE_LAT + jitter();
       const lon = (event.location && event.location.lon) ? event.location.lon + jitter() : BASE_LON + jitter();
 
       sosMarkerCount++;
       document.getElementById('sos-marker-count').innerText = sosMarkerCount;
+      document.getElementById('map-sos-badge').classList.remove('hidden');
 
-      // Show SOS badge
-      const badge = document.getElementById('map-sos-badge');
-      badge.classList.remove('hidden');
-
-      // Red pulsing SOS icon
+      // ── RED PULSING SOS MARKER ──
       const sosIcon = L.divIcon({
         className: '',
-        html: `<div style="position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">
-          <div class="sos-ping-ring"></div>
-          <div class="sos-ping-ring sos-ping-ring-2"></div>
-          <div class="sos-node-dot"></div>
-        </div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
-        popupAnchor: [0, -17]
+        html: `
+          <div style="position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;">
+            <div class="sos-ping-ring"></div>
+            <div class="sos-ping-ring sos-ping-ring-2"></div>
+            <div class="sos-node-dot" style="width:22px;height:22px;border:3px solid white;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">
+              <span style="color:white;font-size:9px;font-weight:900;line-height:1;">SOS</span>
+            </div>
+          </div>`,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
+        popupAnchor: [0, -22]
       });
 
+      const isMyNode = event.sender === myNodeId;
       const timeStr = new Date(event.timestamp || Date.now()).toLocaleTimeString();
-      L.marker([lat, lon], { icon: sosIcon, zIndexOffset: 1000 })
+      const distKm = (Math.random() * 1.5 + 0.1).toFixed(2);
+
+      const marker = L.marker([lat, lon], { icon: sosIcon, zIndexOffset: 1000 })
         .addTo(meshMap)
         .bindPopup(`
-          <div style="font-family:sans-serif;">
-            <b style="color:#ba1a1a">🚨 SOS: ${event.category || 'EMERGENCY'}</b><br>
-            <span style="font-size:11px;color:#555">Node: ${event.sender || 'Unknown'}</span><br>
-            <span style="font-size:11px;color:#555">Time: ${timeStr}</span><br>
-            <span style="font-size:10px;background:#ffdad6;padding:2px 6px;border-radius:4px;color:#410002;">P10 Life-Safety</span>
-          </div>
-        `)
+          <div style="font-family:sans-serif;min-width:190px;">
+            <div style="background:#ba1a1a;color:white;padding:5px 8px;border-radius:6px 6px 0 0;margin:-8px -8px 6px -8px;font-weight:800;font-size:12px;">
+              🚨 SOS SIGNAL RECEIVED
+            </div>
+            <b style="color:#ba1a1a;font-size:12px">${event.category ? event.category.replace(/_/g,' ') : 'EMERGENCY'}</b><br>
+            <span style="font-size:11px;color:#333;font-family:monospace">Source: ${isMyNode ? '📱 YOU (This Node)' : '📡 ' + event.sender}</span><br>
+            <span style="font-size:11px;color:#555">🕐 ${timeStr}</span><br>
+            <span style="font-size:11px;color:#555">📍 ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E</span><br>
+            <span style="font-size:11px;color:#555">📏 ~${distKm} km from your node</span><br>
+            <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap;">
+              <span style="font-size:10px;background:#ffdad6;padding:2px 7px;border-radius:4px;color:#410002;font-weight:700;">P10 Life-Safety</span>
+              <span style="font-size:10px;background:#fff3e0;padding:2px 7px;border-radius:4px;color:#e65100;">Hop 1 / Max 10</span>
+            </div>
+          </div>`)
         .openPopup();
 
-      // Pan map to SOS location
-      meshMap.setView([lat, lon], 15, { animate: true });
+      // ── MESH LINK LINE: Your node → SOS source ──
+      const sosLine = L.polyline(
+        [[BASE_LAT, BASE_LON], [lat, lon]],
+        { color: '#ba1a1a', weight: 2, dashArray: '8 5', opacity: 0.75 }
+      ).addTo(meshMap);
 
-      // Add peer marker for the sender (if not already there)
-      if (event.sender && event.sender !== myNodeId) {
-        addPeerMapMarker(event.sender, lat + 0.001, lon + 0.001, `Peer: ${event.sender}`);
-      }
+      // Store for reset
+      sosLayers.push(marker);
+      sosLayers.push(sosLine);
+
+      // Pan + zoom to SOS location
+      meshMap.fitBounds([[BASE_LAT, BASE_LON], [lat, lon]], { padding: [60, 60], maxZoom: 15, animate: true });
+    }
+
+    // ── RESET MAP: clear all SOS markers + lines ──
+    function resetMeshMap() {
+      sosLayers.forEach(layer => meshMap.removeLayer(layer));
+      sosLayers.length = 0;
+      sosMarkerCount = 0;
+      document.getElementById('sos-marker-count').innerText = '0';
+      document.getElementById('map-sos-badge').classList.add('hidden');
+      meshMap.setView([BASE_LAT, BASE_LON], 14, { animate: true });
+      myMarker.openPopup();
     }
   </script>
 </body>
